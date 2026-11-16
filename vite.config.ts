@@ -36,7 +36,8 @@ export default defineConfig(({ mode }) => {
     server: {
       host: process.env.FIGMA_DEV_SERVER_HOST || "0.0.0.0",
       port: parseInt(process.env.PORT || "8443"),
-      strictPort: true,
+      // Allow local development alongside another invitation already using 8443.
+      strictPort: false,
       watch: {
         ignored: ["**/.figma/**"],
       },

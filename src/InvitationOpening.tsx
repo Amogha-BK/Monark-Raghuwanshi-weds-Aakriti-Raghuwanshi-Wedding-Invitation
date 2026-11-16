@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { motion, useIsPresent } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useIsPresent, useReducedMotion } from "motion/react";
 
 export function InvitationOpening({
   onOpen,
@@ -12,6 +12,7 @@ export function InvitationOpening({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPresent = useIsPresent();
+  const reducedMotion = useReducedMotion();
   const finished = useRef(false);
   const playbackRequested = useRef(false);
   const [phase, setPhase] = useState<"idle" | "starting" | "playing">("idle");
@@ -20,13 +21,33 @@ export function InvitationOpening({
   const finishOpening = () => {
     if (finished.current) return;
     finished.current = true;
+    videoRef.current?.pause();
     onOpen();
   };
+
+  useEffect(() => {
+    if (phase !== "starting") return;
+    const timeout = window.setTimeout(() => {
+      playbackRequested.current = false;
+      setMediaFailed(true);
+      setPhase("idle");
+    }, 8000);
+    return () => window.clearTimeout(timeout);
+  }, [phase]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    return () => video?.pause();
+  }, []);
 
   const playVideo = () => {
     const video = videoRef.current;
     if (!video || finished.current || playbackRequested.current) return;
-    if (mediaFailed) video.load();
+    if (mediaFailed || reducedMotion) {
+      onStart();
+      finishOpening();
+      return;
+    }
     video.currentTime = 0;
     video.playbackRate = 1;
     playbackRequested.current = true;
@@ -37,6 +58,7 @@ export function InvitationOpening({
     void playback.catch(() => {
       if (finished.current) return;
       playbackRequested.current = false;
+      setMediaFailed(true);
       setPhase("idle");
     });
   };
@@ -57,7 +79,7 @@ export function InvitationOpening({
         poster="/envelope-poster.jpg"
         muted
         playsInline
-        preload="auto"
+        preload={reducedMotion ? "none" : "metadata"}
         disablePictureInPicture
         tabIndex={-1}
         aria-label="Wedding invitation opening video"
@@ -86,9 +108,22 @@ export function InvitationOpening({
           onClick={playVideo}
           disabled={phase === "starting" || !isPresent}
         >
-          <span className="simple-open-label">{mediaFailed ? "Tap to retry" : "Tap to open"}</span>
+          <span className="simple-open-label">
+            {mediaFailed ? "Open invitation" : "Tap to open"}
+          </span>
         </button>
       )}
+      <button
+        type="button"
+        className="opening-skip focus-ring"
+        onClick={() => {
+          onStart();
+          finishOpening();
+        }}
+        disabled={!isPresent}
+      >
+        Skip intro
+      </button>
     </motion.section>
   );
 }

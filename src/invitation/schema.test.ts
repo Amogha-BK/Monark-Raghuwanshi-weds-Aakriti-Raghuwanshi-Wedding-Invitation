@@ -21,7 +21,7 @@ test("sample data survives a JSON round trip and derives coherent invitation dat
   assert.equal(new Date(config.celebrations[0].start).toISOString(), "2027-02-13T13:30:00.000Z");
   assert.equal(config.display.celebrationsLabel, "13 & 14 February 2027 · Jaipur");
 });
-test("all five supported functions render through the same data adapter", () => {
+test("all supported functions render through the same data adapter", () => {
   const sample = createSampleRecord();
   sample.celebrations = eventKinds.map((id) => sampleEvent(id, sample.weddingDate));
   const config = toTemplateConfig(validateRecord(sample));
@@ -144,4 +144,37 @@ test("validated records strip unexpected fields and normalize blank contact line
   const record = validateRecord(input);
   assert.deepEqual(record.contacts, []);
   assert.equal("privateDebugNotes" in record, false);
+});
+
+test("customer invitation keeps all eleven functions, supplied family names and unconfirmed times", async () => {
+  const { customerRecord } = await import("./defaultRecord.ts");
+  const config = toTemplateConfig(validateRecord(JSON.parse(JSON.stringify(customerRecord))));
+  assert.equal(config.celebrations.length, 11);
+  assert.equal(config.weddingDate, "2027-02-02");
+  assert.equal(config.couple.first, "Monark Raghuwanshi");
+  assert.equal(config.couple.second, "Aakriti Raghuwanshi");
+  assert.equal(config.couple.firstIsGroom, true);
+  assert.match(config.couple.groomParents, /Ashok Raghuwanshi.*Neha Raghuwanshi/);
+  assert.match(config.couple.brideParents, /Raghuveer Singh Raghuwanshi.*Mamta Raghuwanshi/);
+  assert.deepEqual(
+    config.celebrations.map((e) => e.start.slice(0, 10)),
+    [
+      "2027-01-31",
+      "2027-01-31",
+      "2027-02-01",
+      "2027-02-01",
+      "2027-02-01",
+      "2027-02-01",
+      "2027-02-02",
+      "2027-02-02",
+      "2027-02-02",
+      "2027-02-02",
+      "2027-02-02",
+    ],
+  );
+  assert.ok(config.celebrations.every((e) => e.timeLabel === "Time to be announced"));
+  assert.ok(config.celebrations.every((e) => e.venue === "Mahamaya Marriage Garden"));
+  assert.ok(config.celebrations.every((e) => e.mapUrl === config.venue.mapUrl));
+  assert.equal(new URL(config.venue.mapUrl).searchParams.get("query"),
+    "Mahamaya Marriage Garden, Near Aashima Mall, Hosangabad, Bhopal");
 });

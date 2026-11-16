@@ -1,5 +1,17 @@
 /** Versioned customer data. No React, storage, or provider dependencies. */
-export const eventKinds = ["mehndi", "haldi", "sangeet", "wedding", "reception"] as const;
+export const eventKinds = [
+  "mata-pujan",
+  "mehndi",
+  "engagement",
+  "tilak",
+  "haldi",
+  "sangeet",
+  "chikat",
+  "chadhya",
+  "baraat",
+  "wedding",
+  "reception",
+] as const;
 export type EventKind = (typeof eventKinds)[number];
 export type WeddingEvent = {
   id: EventKind;
@@ -13,6 +25,7 @@ export type WeddingEvent = {
   image: string;
   scene: "lanterns" | "fire" | "candlelight";
   phereTime: string;
+  timeToBeAnnounced?: boolean;
 };
 export type WeddingRecord = {
   version: 1;
@@ -28,6 +41,7 @@ export type WeddingRecord = {
     brideParents: string;
     groomParents: string;
     groomGrandparents: string;
+    firstIsGroom?: boolean;
   };
   memorialLine: string;
   invitationLine: string;
@@ -151,7 +165,8 @@ export function validateRecord(value: unknown): WeddingRecord {
     return v;
   };
   const map = (v: string, path: string, address: string) => {
-    if (!v) return mapSearch(address);
+    if (!v)
+      return /to be announced|details will be shared/i.test(address) ? "" : mapSearch(address);
     try {
       const u = new URL(v);
       if (
@@ -197,10 +212,13 @@ export function validateRecord(value: unknown): WeddingRecord {
   const name = text(venue, "name", "venue.", true);
   const address = text(venue, "address", "venue.", true);
   const rawEvents = Array.isArray(root.celebrations) ? root.celebrations : [];
-  if (rawEvents.length < 1 || rawEvents.length > 5)
-    issues.push({ path: "celebrations", message: "Include 1–5 functions, including the wedding." });
+  if (rawEvents.length < 1 || rawEvents.length > eventKinds.length)
+    issues.push({
+      path: "celebrations",
+      message: `Include 1–${eventKinds.length} functions, including the wedding.`,
+    });
   const seen = new Set<string>();
-  const celebrations = rawEvents.slice(0, 5).map((raw, index): WeddingEvent => {
+  const celebrations = rawEvents.slice(0, eventKinds.length).map((raw, index): WeddingEvent => {
     const path = `celebrations.${index}.`;
     const e = object(raw, path);
     const id = text(e, "id", path, true);
@@ -232,6 +250,7 @@ export function validateRecord(value: unknown): WeddingRecord {
       image: media(text(e, "image", path, true, 12 * 1024 * 1024), `${path}image`, "image", true),
       scene: scene as WeddingEvent["scene"],
       phereTime: text(e, "phereTime", path),
+      timeToBeAnnounced: e.timeToBeAnnounced === true,
     };
   });
   if (!seen.has("wedding"))
@@ -270,6 +289,7 @@ export function validateRecord(value: unknown): WeddingRecord {
       brideParents: text(couple, "brideParents", "couple."),
       groomParents: text(couple, "groomParents", "couple."),
       groomGrandparents: text(couple, "groomGrandparents", "couple."),
+      firstIsGroom: couple.firstIsGroom === true,
     },
     memorialLine: text(root, "memorialLine", ""),
     invitationLine: text(root, "invitationLine", "", true),
@@ -374,7 +394,7 @@ export function toTemplateConfig(record: WeddingRecord) {
     celebrations: record.celebrations.map((e) => ({
       ...e,
       dateLabel: `${dateParts(e.start).weekday}, ${dateParts(e.start).full}`,
-      timeLabel: timeLabel(e.start),
+      timeLabel: e.timeToBeAnnounced ? "Time to be announced" : timeLabel(e.start),
       calendarTitle: `${record.couple.first} & ${record.couple.second} · ${e.shortName}`,
     })),
   };

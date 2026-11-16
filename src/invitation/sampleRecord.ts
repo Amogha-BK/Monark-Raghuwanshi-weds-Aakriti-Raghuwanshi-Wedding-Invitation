@@ -2,6 +2,12 @@ import type { EventKind, WeddingEvent, WeddingRecord } from "./schema";
 
 export function sampleEvent(id: EventKind, weddingDate: string): WeddingEvent {
   const label = {
+    "mata-pujan": "Mata Pujan",
+    engagement: "Engagement",
+    tilak: "Tilak",
+    chikat: "Chikat",
+    chadhya: "Chadhya",
+    baraat: "Baraat",
     mehndi: "Mehendi",
     haldi: "Haldi",
     sangeet: "Sangeet",

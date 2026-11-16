@@ -10,6 +10,7 @@ export function ScratchCard() {
   const [scratchPercent, setScratchPercent] = useState(0);
   const isDrawing = useRef(false);
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
+  const lastProgressCheck = useRef(0);
 
   useEffect(() => {
     if (isRevealed) return;
@@ -21,18 +22,21 @@ export function ScratchCard() {
     if (!ctx) return;
 
     const paintCover = () => {
-      setScratchPercent(0);
       const rect = container.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const width = rect.width || 340;
       const height = rect.height || 210;
+      if (canvas.width === Math.round(width * dpr) && canvas.height === Math.round(height * dpr))
+        return;
+      setScratchPercent(0);
 
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
 
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.globalCompositeOperation = "source-over";
 
       // A pastel yellow cover matches the invitation stationery.
       const grad = ctx.createLinearGradient(0, 0, width, height);
@@ -72,9 +76,17 @@ export function ScratchCard() {
       ctx.fillText("Scratch here, or reveal below", width / 2, height / 2 + 18);
     };
     paintCover();
-    const observer = new ResizeObserver(paintCover);
+    // WebKit reports a resize loop when canvas styles change during delivery.
+    let resizeFrame = 0;
+    const observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(paintCover);
+    });
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(resizeFrame);
+    };
   }, [isRevealed]);
 
   const scratchAt = (clientX: number, clientY: number) => {
@@ -104,7 +116,12 @@ export function ScratchCard() {
     }
 
     lastPoint.current = { x, y };
-    checkProgress();
+    // Pixel readback is expensive on phones; keep drawing fluid between checks.
+    const now = performance.now();
+    if (now - lastProgressCheck.current >= 120) {
+      lastProgressCheck.current = now;
+      checkProgress();
+    }
   };
 
   const checkProgress = () => {
@@ -151,6 +168,7 @@ export function ScratchCard() {
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!e.isPrimary || e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     isDrawing.current = true;
     lastPoint.current = null;
@@ -163,6 +181,7 @@ export function ScratchCard() {
   };
 
   const handlePointerUp = () => {
+    if (isDrawing.current) checkProgress();
     isDrawing.current = false;
     lastPoint.current = null;
   };
@@ -183,7 +202,9 @@ export function ScratchCard() {
               <span className="scratch-day-num">{config.display.wedding.day}</span>
               <div className="scratch-month-col">
                 <strong>{config.display.wedding.month.toUpperCase()}</strong>
-                <span>{config.display.wedding.year} · {config.display.wedding.weekday.toUpperCase()}</span>
+                <span>
+                  {config.display.wedding.year} · {config.display.wedding.weekday.toUpperCase()}
+                </span>
               </div>
             </div>
             <p className="scratch-couple-names">
@@ -208,6 +229,7 @@ export function ScratchCard() {
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
             onPointerCancel={handlePointerUp}
+            onLostPointerCapture={handlePointerUp}
           />
         )}
       </div>

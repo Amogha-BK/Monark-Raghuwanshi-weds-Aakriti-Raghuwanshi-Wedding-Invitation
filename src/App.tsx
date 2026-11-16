@@ -368,78 +368,95 @@ function getGoogleCalendarUrl(event: Celebration) {
     const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
     const formatTime = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
     const dates = `${formatTime(startDate)}/${formatTime(endDate)}`;
+    const calendarDates = event.timeToBeAnnounced
+      ? event.start.slice(0, 10).replace(/-/g, "") +
+        "/" +
+        new Date(Date.parse(event.start.slice(0, 10) + "T12:00:00Z") + 86400000)
+          .toISOString()
+          .slice(0, 10)
+          .replace(/-/g, "")
+      : dates;
     const title = encodeURIComponent(event.calendarTitle || event.title);
     const details = encodeURIComponent(
       `${event.title}\nVenue: ${event.venue}\nAddress: ${event.address}`,
     );
     const location = encodeURIComponent(`${event.venue}, ${event.address}`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${calendarDates}&details=${details}&location=${location}`;
   } catch {
     return event.mapUrl;
   }
 }
 
 function EventCard({ event, index }: { event: Celebration; index: number }) {
+  const config = useInvitation();
   const reducedMotion = useReducedMotion();
-  const subtitle = event.title.includes(" — ") ? event.title.split(" — ")[1] : "";
-
+  const subtitle = event.title.includes(" \u2014 ") ? event.title.split(" \u2014 ")[1] : "";
+  const coupleNames =
+    config.couple.first.split(" ")[0] + " & " + config.couple.second.split(" ")[0];
   return (
     <motion.article
       id={event.id}
-      className={`wedding-function-card event-${event.id}`}
+      className={"wedding-function-card reference-function-card event-" + event.id}
       initial={reducedMotion ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.1 }}
-      transition={{ duration: 0.45, delay: index * 0.08 }}
+      transition={{ duration: 0.45 }}
     >
-      <div className="function-card-heading">
-        <div className="ceremony-heading-art" aria-hidden="true">
-          <img src={event.image} alt="" loading="lazy" decoding="async" />
+      <div className="ceremony-invitation-scene">
+        <img
+          className="ceremony-invitation-art"
+          src={event.image}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          width={1024}
+          height={1536}
+        />
+        <div className="ceremony-invitation-copy">
+          <span className="ceremony-couple-label">{coupleNames}</span>
+          <span className="function-card-event-badge">
+            Celebration {String(index + 1).padStart(2, "0")}
+          </span>
+          <h3>{event.shortName}</h3>
+          <p className="ceremony-traditional-subtitle">{subtitle}</p>
+          <div className="ceremony-date-block">
+            <time dateTime={event.timeToBeAnnounced ? event.start.slice(0, 10) : event.start}>
+              {event.dateLabel}
+            </time>
+            <p>
+              {event.timeLabel}
+              {!event.timeToBeAnnounced && " IST"}
+            </p>
+          </div>
+          {event.phereTime && <p>{event.phereTime}</p>}
         </div>
-        <span className="function-card-event-badge">
-          Celebration {String(index + 1).padStart(2, "0")}
-        </span>
-        <h3>{event.id === "wedding" ? "Shubh Vivaah" : event.shortName}</h3>
-        <p className="function-card-subtitle">{subtitle}</p>
       </div>
-      <div className="function-card-details">
-        <p className="function-card-date-line">
-          <time dateTime={event.start}>{event.dateLabel}</time>
-        </p>
-        <p className="function-card-time">
-          <Clock size={19} aria-hidden="true" />
-          <strong>{event.timeLabel}</strong>
-          <span>IST</span>
-        </p>
-        {event.phereTime && <p className="function-card-phere-tag">{event.phereTime}</p>}
-        <div className="function-card-venue-block">
-          <MapPin size={22} aria-hidden="true" />
-          <h4>{event.venue}</h4>
-          <p>{event.address}</p>
-        </div>
-        <p className="event-description">{event.supportingLine}</p>
+      <div className="ceremony-invitation-footer">
+        <h4>{event.venue}</h4>
+        <p className="ceremony-address">{event.address}</p>
         <div className="event-actions">
-          <a
-            className="button button-solid focus-ring"
-            href={event.mapUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <NavigationIcon size={18} aria-hidden="true" /> Get directions
-          </a>
+          {event.mapUrl && (
+            <a
+              className="button button-outline focus-ring"
+              href={event.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <NavigationIcon size={18} aria-hidden="true" /> Directions
+            </a>
+          )}
           <a
             className="calendar-link focus-ring"
             href={getGoogleCalendarUrl(event)}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Add ${event.shortName} to your calendar`}
+            aria-label={"Add " + event.shortName + " to your calendar"}
           >
-            <CalendarPlus size={19} aria-hidden="true" /> Add to calendar
+            <CalendarPlus size={18} aria-hidden="true" /> Add to calendar
           </a>
         </div>
-      </div>
-      <div className="ceremony-footer-art" aria-hidden="true">
-        <img src={event.image} alt="" loading="lazy" decoding="async" />
+        <p className="ceremony-blessing">{event.supportingLine}</p>
       </div>
     </motion.article>
   );
@@ -779,7 +796,9 @@ export default function App() {
             <SparkleField variant="hero" active={opened} />
             <div className="hero-editorial-topline">
               <span>A celebration of togetherness</span>
-              <span>{config.city} · {config.display.wedding.monthYear}</span>
+              <span>
+                {config.city} · {config.display.wedding.monthYear}
+              </span>
             </div>
             <div className="hero-editorial-grid">
               <div className="hero-portrait-column">
@@ -794,13 +813,17 @@ export default function App() {
                 <p className="ganesh-invocation">॥ Shri Ganeshaya Namah ॥</p>
                 <p className="eyebrow">Together with our families</p>
                 <h1 ref={invitationHeading} tabIndex={-1}>
-                  <span className="hero-name">{config.couple.first}</span>
+                  <span className="hero-name">
+                    {config.couple.first.split(" ")[0]}
+                    <small>{config.couple.first.split(" ").slice(1).join(" ")}</small>
+                  </span>
                   <span className="hero-ampersand">&amp;</span>
-                  <span className="hero-name">{config.couple.second}</span>
+                  <span className="hero-name">
+                    {config.couple.second.split(" ")[0]}
+                    <small>{config.couple.second.split(" ").slice(1).join(" ")}</small>
+                  </span>
                 </h1>
-                <p className="hero-invitation-line">
-                  {config.wording.heroMessage}
-                </p>
+                <p className="hero-invitation-line">{config.wording.heroMessage}</p>
                 <div className="hero-date">
                   <span>{config.display.wedding.weekday}</span>
                   <time dateTime={config.weddingDate}>{config.display.wedding.full}</time>
@@ -818,7 +841,11 @@ export default function App() {
             </a>
           </section>
 
-          <section className="family-section" id="invitation">
+          <section
+            className="family-section"
+            id="invitation"
+            data-monogram={config.display.initials.join(" & ")}
+          >
             <BotanicalSprig className="family-sprig" />
             <motion.div
               initial={reducedMotion ? false : { opacity: 0, y: 24 }}
@@ -833,13 +860,21 @@ export default function App() {
               <div className="invitation-families" aria-label="The couple and their families">
                 <div>
                   <h2>{config.couple.first}</h2>
-                  <p>{config.couple.brideParents}</p>
+                  <p>
+                    {config.couple.firstIsGroom
+                      ? config.couple.groomParents
+                      : config.couple.brideParents}
+                  </p>
                 </div>
                 <span className="family-weds">weds</span>
                 <div>
                   <h2>{config.couple.second}</h2>
-                  <p>{config.couple.groomGrandparents}</p>
-                  <p>{config.couple.groomParents}</p>
+                  {config.couple.groomGrandparents && <p>{config.couple.groomGrandparents}</p>}
+                  <p>
+                    {config.couple.firstIsGroom
+                      ? config.couple.brideParents
+                      : config.couple.groomParents}
+                  </p>
                 </div>
               </div>
               <p className="family-blessing">{config.blessingLine}</p>
@@ -875,9 +910,7 @@ export default function App() {
             <SectionHeading eyebrow={config.display.celebrationsLabel}>
               Let the celebrations begin
             </SectionHeading>
-            <p className="section-intro">
-              {config.wording.celebrationsIntro}
-            </p>
+            <p className="section-intro">{config.wording.celebrationsIntro}</p>
             <div className="events">
               {config.celebrations.map((event, index) => (
                 <EventCard key={event.id} event={event} index={index} />
@@ -906,14 +939,16 @@ export default function App() {
               <MapPin className="venue-pin" />
               <h3>{config.venue.name}</h3>
               <p>{config.venue.address}</p>
-              <a
-                className="button button-solid focus-ring"
-                href={config.venue.mapUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <MapPin /> Open in Google Maps
-              </a>
+              {config.venue.mapUrl && (
+                <a
+                  className="button button-solid focus-ring"
+                  href={config.venue.mapUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MapPin /> Open in Google Maps
+                </a>
+              )}
             </div>
           </motion.section>
 
@@ -934,22 +969,24 @@ export default function App() {
               <SectionHeading eyebrow="We are here to help">With warm regards</SectionHeading>
               <p className="closing-message">{config.hosts}</p>
               <p>{config.homeAddress}</p>
-              <div className="family-contacts">
-                <div className="contact-numbers" aria-label="Family contact numbers">
-                  <span className="contact-label">Contact:</span>
-                  {config.contacts.map((number) => (
-                    <span key={number} className="contact-number">
-                      {number.length === 10 ? (
-                        <a className="focus-ring" href={`tel:+91${number}`}>
-                          <Phone size={18} aria-hidden="true" /> {number}
-                        </a>
-                      ) : (
-                        number
-                      )}
-                    </span>
-                  ))}
+              {config.contacts.length > 0 && (
+                <div className="family-contacts">
+                  <div className="contact-numbers" aria-label="Family contact numbers">
+                    <span className="contact-label">Contact:</span>
+                    {config.contacts.map((number) => (
+                      <span key={number} className="contact-number">
+                        {number.length === 10 ? (
+                          <a className="focus-ring" href={`tel:+91${number}`}>
+                            <Phone size={18} aria-hidden="true" /> {number}
+                          </a>
+                        ) : (
+                          number
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="closing-rule" aria-hidden="true" />
               <p className="closing-note">{config.wording.closingNote}</p>
               <div className="closing-navigation">

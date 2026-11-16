@@ -1,8 +1,8 @@
 {
-  "title": "Shristi & Harsh",
-  "description": "Join Shristi and Harsh for the Mehndi Ceremony, Haldi Ceremony and Wedding Ceremony on 9-10 December 2026 in Indirapuram, Ghaziabad, Uttar Pradesh. Celebration times, family details and venue directions.",
+  "title": "Monark & Aakriti | Wedding Invitation",
+  "description": "Celebrate the wedding of Monark Raghuwanshi and Aakriti Raghuwanshi, with their families, from 31 January to 2 February 2027.",
   "icons": {
-    "icon": "/assets/shristi-harsh-monogram.png"
+    "icon": "/assets/monark-aakriti-monogram.svg"
   },
   "robots": {
     "index": false
@@ -12,6 +12,6 @@
     "ignoreReducedMotion": false
   },
   "openGraph": {
-    "image": "https://shrustiandharshawdinvt.vercel.app/assets/wedding-share-cover-v1.jpg"
+    "image": "/assets/ceremony-marigold-arch-v1.png"
   }
 }
