@@ -2,7 +2,7 @@
 
 Complete React 19, Vite 8, and Tailwind CSS 4 project, including the animated envelope entrance, countdown, event details, calendar and map links, scratch card, music, all media assets, and local owner editor.
 
-This copy preserves the source project's existing invitation content and metadata. The repository name does not automatically personalize it for Monark Raghuwanshi and Aakriti Raghuwanshi.
+This copy preserves the source project's existing invitation content and metadata. The repository name does not automatically personalize it for Monark Raghuwanshi and Aakrati Raghuwanshi.
 
 ## Run locally
 

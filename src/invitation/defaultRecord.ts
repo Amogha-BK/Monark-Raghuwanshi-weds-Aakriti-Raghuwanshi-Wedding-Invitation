@@ -95,7 +95,7 @@ export const customerRecord: WeddingRecord = {
   scratchLocation: fullLocation,
   couple: {
     first: "Monark Raghuwanshi",
-    second: "Aakriti Raghuwanshi",
+    second: "Aakrati Raghuwanshi",
     firstIsGroom: true,
     groomParents: "Son of Shri Ashok Raghuwanshi & Smt. Neha Raghuwanshi",
     brideParents: "Daughter of Shri Raghuveer Singh Raghuwanshi & Smt. Mamta Raghuwanshi",
@@ -103,7 +103,7 @@ export const customerRecord: WeddingRecord = {
   },
   memorialLine: "Shri Ganeshaya Namah · With the blessings of our elders",
   invitationLine:
-    "With joyful hearts, Ashok & Neha Raghuwanshi and Raghuveer Singh & Mamta Raghuwanshi cordially invite you to celebrate the wedding of their beloved children, Monark Raghuwanshi and Aakriti Raghuwanshi.",
+    "With joyful hearts, Ashok & Neha Raghuwanshi and Raghuveer Singh & Mamta Raghuwanshi cordially invite you to celebrate the wedding of their beloved children, Monark Raghuwanshi and Aakrati Raghuwanshi.",
   blessingLine:
     "Please grace our wedding celebrations with your presence and bless us as we begin our life together.",
   homeAddress: fullLocation,
@@ -133,7 +133,7 @@ export const customerRecord: WeddingRecord = {
     heroFootnote: "Your presence and blessings mean the world to us.",
     celebrationsIntro:
       "Three days of cherished traditions, music and love · 31 January – 2 February 2027",
-    closingNote: "We look forward to celebrating with you. With love, Monark & Aakriti.",
+    closingNote: "We look forward to celebrating with you. With love, Monark & Aakrati.",
   },
   celebrations: functions.map(([id, date, shortName, subtitle, supportingLine]) => ({
     id,

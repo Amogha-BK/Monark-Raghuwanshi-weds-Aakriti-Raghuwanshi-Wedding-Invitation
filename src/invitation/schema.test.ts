@@ -152,7 +152,7 @@ test("customer invitation keeps all eleven functions, supplied family names and 
   assert.equal(config.celebrations.length, 11);
   assert.equal(config.weddingDate, "2027-02-02");
   assert.equal(config.couple.first, "Monark Raghuwanshi");
-  assert.equal(config.couple.second, "Aakriti Raghuwanshi");
+  assert.equal(config.couple.second, "Aakrati Raghuwanshi");
   assert.equal(config.couple.firstIsGroom, true);
   assert.match(config.couple.groomParents, /Ashok Raghuwanshi.*Neha Raghuwanshi/);
   assert.match(config.couple.brideParents, /Raghuveer Singh Raghuwanshi.*Mamta Raghuwanshi/);
