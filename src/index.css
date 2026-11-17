@@ -3038,7 +3038,7 @@ footer {
   pointer-events: none;
 }
 .family-section::before {
-  content: "S & H";
+  content: attr(data-monogram);
   top: 64px;
   left: calc(50% - 43px);
   width: 86px;
