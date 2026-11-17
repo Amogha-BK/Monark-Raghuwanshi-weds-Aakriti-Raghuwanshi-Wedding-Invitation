@@ -740,19 +740,16 @@ export default function App() {
   }, [revealed]);
 
   const handleStartOpening = () => {
-    if (!weddingAudio.current) return;
-    weddingAudio.current.volume = 0.35;
-    void weddingAudio.current.play().catch(() => {});
+    const player = weddingAudio.current;
+    if (!player) return;
+    // Preserve the full first word when starting from the opening gesture.
+    player.currentTime = 0;
+    player.volume = 0.35;
+    void player.play().catch(() => {});
   };
 
   const openInvitation = () => {
     if (opened) return;
-    if (weddingAudio.current) {
-      weddingAudio.current.volume = 0.35;
-      void weddingAudio.current.play().catch(() => {
-        // The music control can retry if playback is unavailable or blocked.
-      });
-    }
     window.scrollTo({ top: 0, behavior: "instant" });
     setOpened(true);
   };
@@ -997,6 +994,7 @@ export default function App() {
                   type="button"
                   className="opening-replay focus-ring"
                   onClick={() => {
+                    weddingAudio.current?.pause();
                     setRevealed(false);
                     setOpened(false);
                   }}

@@ -120,7 +120,7 @@ export const customerRecord: WeddingRecord = {
     travel: "",
     stay: "",
     contact: "",
-    musicUrl: "/assets/kudmayi.mp3",
+    musicUrl: "/assets/tu-saval.mp3",
     whatsappHostNumber: "",
   },
   media: {
