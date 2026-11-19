@@ -1,9 +1,16 @@
 ﻿import type { EventKind, WeddingRecord } from "./schema";
 
+import { mapSearch } from "./schema.ts";
+
 const venueName = "Mahamaya Marriage Garden";
 const venueAddress = "Near Aashima Mall, Hosangabad, Bhopal";
 const fullLocation = `${venueName}, ${venueAddress}`;
-const venueMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+const venueMapUrl = mapSearch(fullLocation);
+const lotusGarden = {
+  venue: "A-06 Lotus Garden",
+  address: "Shankarcharya FlowerCity Bagmugalia Bhopal",
+};
+const lotusGardenMapUrl = mapSearch(`${lotusGarden.venue} ${lotusGarden.address}`);
 
 const functions: [EventKind, string, string, string, string][] = [
   [
@@ -141,9 +148,9 @@ export const customerRecord: WeddingRecord = {
     title: `${shortName} — ${subtitle}`,
     start: `${date}T00:00:00+05:30`,
     timeToBeAnnounced: true,
-    venue: venueName,
-    address: venueAddress,
-    mapUrl: venueMapUrl,
+    ...(id === "mata-pujan" || id === "mehndi"
+      ? { ...lotusGarden, mapUrl: lotusGardenMapUrl }
+      : { venue: venueName, address: venueAddress, mapUrl: venueMapUrl }),
     supportingLine,
     image: `/assets/ceremony-${id}-v1.webp`,
     scene: id === "wedding" ? "fire" : "lanterns",

@@ -173,8 +173,18 @@ test("customer invitation keeps all eleven functions, supplied family names and 
     ],
   );
   assert.ok(config.celebrations.every((e) => e.timeLabel === "Time to be announced"));
-  assert.ok(config.celebrations.every((e) => e.venue === "Mahamaya Marriage Garden"));
-  assert.ok(config.celebrations.every((e) => e.mapUrl === config.venue.mapUrl));
+  const lotusGardenEvents = config.celebrations.filter((e) => e.venue === "A-06 Lotus Garden");
+  assert.deepEqual(lotusGardenEvents.map((e) => e.id), ["mata-pujan", "mehndi"]);
+  for (const event of lotusGardenEvents) {
+    assert.equal(event.address, "Shankarcharya FlowerCity Bagmugalia Bhopal");
+    assert.equal(
+      new URL(event.mapUrl).searchParams.get("query"),
+      "A-06 Lotus Garden Shankarcharya FlowerCity Bagmugalia Bhopal",
+    );
+  }
+  const marriageGardenEvents = config.celebrations.filter((e) => !lotusGardenEvents.includes(e));
+  assert.ok(marriageGardenEvents.every((e) => e.venue === "Mahamaya Marriage Garden"));
+  assert.ok(marriageGardenEvents.every((e) => e.mapUrl === config.venue.mapUrl));
   assert.equal(new URL(config.venue.mapUrl).searchParams.get("query"),
     "Mahamaya Marriage Garden, Near Aashima Mall, Hosangabad, Bhopal");
 });
